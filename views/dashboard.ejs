@@ -1,4 +1,4 @@
-
+    <!--include socket io for client in header.ejs-->
     <%- include('layouts/header.ejs') %>
     <div>
         <h4 class="mb-4">Hi,<%=currentUser.username%></h4>
@@ -12,13 +12,23 @@
                         <li class="list-group-item list-group-item-dark cursor-pointer user-list">
                             <img src="images/profileDefault.jpeg"height="50px" height="50px">
                             <%= user.username %>
+                            <!--dynamic id for user current status-->
+                            <% if (user.isOnline == 1) { %>
+
+                                <sup id="<%= user._id %>-status" class="online-status">online</sup>
+
+                            <% } else { %>
+
+                                <sup id="<%= user._id %>-status" class="offline-status">offline</sup>
+
+                              <%  } %>
                         </li>
                      <% }) %>
                     <% } %>
                 </ul>
             </div>
-            <!--if not started chat pointer user->clicked then show() chat section ,by default display none()-->
-            <div class="col-md-9">  <!--occupy 75% for chat-->
+            <!--if not started chat, cursor-pointer user->clicked then show() chat section ,by default display none()-->
+            <div class="col-md-8">  <!--occupy 75% for chat-->
                 <h3 class="start-chat">click to start chat</h3>
                 <div class="chat-section">
                     <div class="chat-container">
@@ -34,6 +44,29 @@
     </div>
 
     <script>
+        // fetching the current user id and passing it to backend through namespace args
+        var sender_id = "<%=currentUser._id%>"
+        //Connect to the users namespace
+        var socket = io('/user-namespace',{
+            auth:{
+                token : sender_id,
+            }
+        }) // so on backend whenever user connects, socket gives senderid through handshake{ auth : {token: id }} all are in socket obj
+        
+        // if offline => => from recived userdata means login => remove offline class & add online class 
+        socket.on("UpdateOnlineStatus",(data)=>{
+            $(`#${data.cu_id}-status`).text("online");
+            $(`#${data.cu_id}-status`).removeClass("offline-status")
+            $(`#${data.cu_id}-status`).addClass("online-status")
+        })
+        socket.on("UpdateOfflineStatus",(data)=>{
+            $(`#${data.cu_id}-status`).text("offline")
+            $(`#${data.cu_id}-status`).removeClass("online-status")
+            $(`#${data.cu_id}-status`).addClass("offline-status")
+        })
+
+
+        // for chat section and cursor pointer on user events 
         $(document).ready(function(){
 
             $('.user-list').click(function(){
