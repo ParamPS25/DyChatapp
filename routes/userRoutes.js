@@ -1,7 +1,7 @@
 const express = require("express");
 const multer = require("multer")
 const path = require("path");
-const {getRegister,postRegister,getLogin,getDashBoard,getLogout,postLogin} = require("../controllers/userControllers")
+const {getRegister,postRegister,getLogin,getDashBoard,getLogout,postLogin,saveChat  } = require("../controllers/userControllers")
 
 const {isLogin,isLogout} = require("../middlewares/auth")
 
@@ -34,6 +34,8 @@ router.get("/login",isLogout,getLogin)
 router.post("/login",postLogin)
 router.get("/logout",isLogin,getLogout)
 router.get("/dashboard",isLogin,getDashBoard)
+
+router.post("/save-chat",saveChat)
 
 //route handler that catches all unmatched routes and redirects them to the "/" login page here
 router.get("*",async(req,res)=>{

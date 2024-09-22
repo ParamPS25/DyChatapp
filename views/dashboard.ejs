@@ -9,7 +9,7 @@
                 <ul class="list-group">
                     <% if (locals.users) { %>
                      <% users.forEach(user => { %>
-                        <li class="list-group-item list-group-item-dark cursor-pointer user-list">
+                        <li class="list-group-item list-group-item-dark cursor-pointer user-list data-id=<%= user._id %>"> <!--data-id attr for recived id-->
                             <img src="images/profileDefault.jpeg"height="50px" height="50px">
                             <%= user.username %>
                             <!--dynamic id for user current status-->
@@ -27,15 +27,24 @@
                     <% } %>
                 </ul>
             </div>
+            
             <!--if not started chat, cursor-pointer user->clicked then show() chat section ,by default display none()-->
             <div class="col-md-8">  <!--occupy 75% for chat-->
                 <h3 class="start-chat">click to start chat</h3>
                 <div class="chat-section">
-                    <div class="chat-container">
-                    </div>
 
-                    <form>
-                        <input type="text" name="message" placeholder="enter message" id="message" required>
+                    <div id="chat-container">
+                            <% if (locals.chatData) { %>
+                                <% chatData.forEach(chatdata => { %>
+                                    <div class="current-user-chat">
+                                        <h5><%= chatdata.message %></h5>
+                                    </div>
+                                    <%})%>
+                            <% } %>
+                    </div>
+                            
+                    <form id="chat-form-id" method="POST" action="/save-chat">
+                        <input type="text" name="message" placeholder="enter message" id="messageInput" required />
                         <button type="submit" class="btn btn-primary">Send</button>
                     </form>
                 </div>
@@ -46,6 +55,8 @@
     <script>
         // fetching the current user id and passing it to backend through namespace args
         var sender_id = "<%=currentUser._id%>"
+        // onclick-user it need to fill this recevier_id means chat which will being sent to
+        var receiver_id ;
         //Connect to the users namespace
         var socket = io('/user-namespace',{
             auth:{
@@ -69,11 +80,47 @@
         // for chat section and cursor pointer on user events 
         $(document).ready(function(){
 
+            var userid = $(this).attr("data-id"); //getting current attr for recevier_id
+            receiver_id = userid;         
+
             $('.user-list').click(function(){
                 $('.start-chat').hide();
                 $('.chat-section').show();
             });
         })
+
+        //save chat of users
+        // $('#chat-form-id').submit(function(event){
+        //     event.preventDefault();
+
+        //     var message = $('#messageInput').val();
+        //     console.log("Sending message:", message, "to receiver:", receiver_id);
+        //     $.ajax({
+        //         url:'/save-chat',
+        //         method:'POST',
+        //         data:{
+        //             senderId:sender_id,
+        //             recieverId:reciver_id,
+        //             message:message,
+        //         },
+        //         success: function(response) {
+        //             console.log('Response:', response);  // Add this for debugging
+        //             if(response.success) {
+        //                 $('#messageInput').val('');   // Clear the input field
+        //                 let chat = response.chatData.message;
+        //                 let html = `<div class="current-user-chat">
+        //                                 <h5>${chat}</h5>
+        //                             </div>`;
+        //                 $('#chat-container').append(html);
+        //                 console.log('Message appended:', chat);  // Add this for debugging
+        //             } else {
+        //                 alert(response.msg);  // Changed from chatData.msg to response.msg
+        //             }
+        //         }
+        //     })
+        // })
+
+
     </script>
 
     <%- include('layouts/footer.ejs') %>
